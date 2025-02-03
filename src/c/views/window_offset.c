@@ -5,8 +5,15 @@ static Window *s_window;
 static StatusBarLayer *s_status_bar;
 static Layer *s_selection_layer;
 
+static TextLayer *s_original_time_layer;
+static TextLayer *s_offset_time_layer;
+static char s_original_time_str[10];
+static char s_offset_time_str[10];
+
 static const unsigned total_input = 3;
 static const int input_min_max[2] = {-60, 60};
+
+static int myval = 4;
 
 typedef struct _InputData
 {
@@ -78,6 +85,7 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
         if (input_data->value > input_min_max[1])
             input_data->value -= to_add;        // undo operation
     }
+    snprintf(s_offset_time_str, sizeof(s_offset_time_str), "%d", myval + s_input_data.value);
 }
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
@@ -99,6 +107,7 @@ static void selection_handle_dec(int index, uint8_t clicks, void *context) {
         if (input_data->value < input_min_max[0])
             input_data->value += to_sub;        // undo operation
     }
+    snprintf(s_offset_time_str, sizeof(s_offset_time_str), "%d", myval + s_input_data.value);
 }
 
 static void window_load(Window *window)
@@ -110,16 +119,37 @@ static void window_load(Window *window)
     // create status bar to show current time
     s_status_bar = status_bar_layer_create();
 
-    // creaete selection layer
+    const unsigned available_height = bounds.size.h - STATUS_BAR_LAYER_HEIGHT;
+    const unsigned widget_height = available_height / 3;
+
+    // create layer to show the original time
+    s_original_time_layer = text_layer_create(GRect(0, 0+STATUS_BAR_LAYER_HEIGHT, bounds.size.w, available_height/3));
+    snprintf(s_original_time_str, sizeof(s_original_time_str), "%d", myval);
+    text_layer_set_background_color(s_original_time_layer, GColorCyan);
+    text_layer_set_text_color(s_original_time_layer, GColorBlack);
+    text_layer_set_text(s_original_time_layer, s_original_time_str);
+    text_layer_set_font(s_original_time_layer, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+    text_layer_set_text_alignment(s_original_time_layer, GTextAlignmentCenter);
+
+    // create layer to show the offset-ed time
+    s_offset_time_layer = text_layer_create(GRect(0, 2*widget_height+STATUS_BAR_LAYER_HEIGHT, bounds.size.w, available_height/3));
+    snprintf(s_offset_time_str, sizeof(s_offset_time_str), "%d", myval + s_input_data.value);
+    text_layer_set_background_color(s_offset_time_layer, GColorArmyGreen);
+    text_layer_set_text_color(s_offset_time_layer, GColorBlack);
+    text_layer_set_text(s_offset_time_layer, s_offset_time_str);
+    text_layer_set_font(s_offset_time_layer, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+    text_layer_set_text_alignment(s_offset_time_layer, GTextAlignmentCenter);
+
+    // create selection layer
+    GRect input_bounds = GRect(0, 0+STATUS_BAR_LAYER_HEIGHT+widget_height, bounds.size.w, available_height/3);
     const GEdgeInsets selection_insets = GEdgeInsets(
-        (bounds.size.h - PIN_WINDOW_SIZE.h) / 2,
-        (bounds.size.w - PIN_WINDOW_SIZE.w) / 2
+        (input_bounds.size.h - PIN_WINDOW_SIZE.h) / 2,
+        (input_bounds.size.w - PIN_WINDOW_SIZE.w) / 2
     );
 
-    s_selection_layer = selection_layer_create(grect_inset(bounds, selection_insets), total_input);
-    selection_layer_set_cell_width(s_selection_layer, 0, 40);
-    selection_layer_set_cell_width(s_selection_layer, 1, 40);
-    selection_layer_set_cell_width(s_selection_layer, 2, 40);
+    s_selection_layer = selection_layer_create(grect_inset(input_bounds, selection_insets), total_input);
+    for (unsigned i=0; i<total_input; ++i)
+        selection_layer_set_cell_width(s_selection_layer, i, 40);
     
     selection_layer_set_cell_padding(s_selection_layer, 4);
     selection_layer_set_active_bg_color(s_selection_layer, GColorRed);
@@ -131,15 +161,19 @@ static void window_load(Window *window)
         .increment = selection_handle_inc,
         .decrement = selection_handle_dec,
     });
-      
+
     // add as child layer
     layer_add_child(window_layer, status_bar_layer_get_layer(s_status_bar));
+    layer_add_child(window_layer, text_layer_get_layer(s_original_time_layer));
+    layer_add_child(window_layer, text_layer_get_layer(s_offset_time_layer));
     layer_add_child(window_layer, s_selection_layer);
 }
 
 static void window_unload(Window *window)
 {
     layer_destroy(s_selection_layer);
+    text_layer_destroy(s_original_time_layer);
+    text_layer_destroy(s_offset_time_layer);
     status_bar_layer_destroy(s_status_bar);
     window_destroy(s_window);
     s_window = NULL;
