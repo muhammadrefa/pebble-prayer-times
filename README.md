@@ -9,10 +9,11 @@ _Work In Progress_
 - [X] Show prayer times
 - [ ] Change location
 - [X] Save configuration to storage
-- [ ] Set time offset
+- [X] Set time offset
 - [ ] Configuration page (using [Clay](https://github.com/pebble/clay))
 - [ ] Get location from phone
 - [ ] Timeline integration
+- [ ] Show current and next prayer time in the first screen
 
 ## 3rd party libraries
 3rd party libraries will pushed later
