@@ -5,18 +5,9 @@ static Window *s_window;
 static StatusBarLayer *s_status_bar;
 static Layer *s_selection_layer;
 
-// static Layer *s_original_time_layer;
-// static TextLayer *s_original_time_title;
-// static TextLayer *s_original_time_textlayer;
-
-// static TextLayer *s_offset_time_textlayer;
-// static char *s_offset_time_str;
-
 const unsigned total_input = 3;
 const int input_min_max[2] = {-60, 60};
 const unsigned string_size = 10 + 1;    // NULL terminated
-
-int myval = 4;
 
 typedef struct _InputData
 {
@@ -32,9 +23,11 @@ typedef struct _ShowValueLayer
     TextLayer* value;
 } ShowValueLayer;
 
-// TODO: Input data shouldn't be here
-// static InputData s_input_data = {.value = 0};
 static InputData *s_input_data;
+static int *current_offset;
+
+static char* prayer_name;
+static tm* prayer_time;
 
 static ShowValueLayer* s_original_time;
 static char *s_original_time_str;
@@ -131,6 +124,23 @@ static void prv_show_value_layer_set_value(ShowValueLayer* layer, char* value)
     text_layer_set_text(layer->value, value);
 }
 
+static void prv_update_offset_time_preview(int offset)
+{
+    tm offset_time = *prayer_time;
+    offset_time.tm_min += offset;
+    if (offset_time.tm_min >= 60)
+    {
+        offset_time.tm_hour += 1;
+        offset_time.tm_min -= 60;
+    }
+    else if (offset_time.tm_min < 0)
+    {
+        offset_time.tm_hour -= 1;
+        offset_time.tm_min += 60;
+    }
+    strftime(s_offset_time_str, string_size, clock_is_24h_style() ? "%H:%M" : "%I:%M %p", &offset_time);
+}
+
 static char* selection_handle_get_text(int index, void *context) {
     InputData *input_data = (InputData*)context;
 
@@ -170,7 +180,7 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
         if (input_data->value > input_min_max[1])
             input_data->value -= to_add;        // undo operation
     }
-    snprintf(s_offset_time_str, sizeof(s_offset_time_str), "%d", myval + input_data->value);
+    prv_update_offset_time_preview(input_data->value);
 }
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
@@ -192,7 +202,7 @@ static void selection_handle_dec(int index, uint8_t clicks, void *context) {
         if (input_data->value < input_min_max[0])
             input_data->value += to_sub;        // undo operation
     }
-    snprintf(s_offset_time_str, sizeof(s_offset_time_str), "%d", myval + input_data->value);
+    prv_update_offset_time_preview(input_data->value);
 }
 
 static void window_load(Window *window)
@@ -212,21 +222,23 @@ static void window_load(Window *window)
 
     const unsigned available_height = bounds.size.h - STATUS_BAR_LAYER_HEIGHT;
     const unsigned widget_height = available_height / 3;
-    const unsigned divider_width = bounds.size.w / 5;
 
     // create layer to show the original time
     s_original_time = prv_show_value_layer_create(GRect(0, 0+STATUS_BAR_LAYER_HEIGHT, bounds.size.w, widget_height));
-    prv_show_value_layer_set_title(s_original_time, "Magrib");
+    prv_show_value_layer_set_title(s_original_time, prayer_name);
     prv_show_value_layer_set_subtitle(s_original_time, "(original)");
     prv_show_value_layer_set_value(s_original_time, s_original_time_str);
-    snprintf(s_original_time_str, string_size, "%d%d:%d%d am", myval, myval+1, myval+2, myval+3);
+    // snprintf(s_original_time_str, string_size, "%d%d:%d%d am", myval, myval+1, myval+2, myval+3);
+    strftime(s_original_time_str, string_size, clock_is_24h_style() ? "%H:%M" : "%I:%M %p", prayer_time);
 
     // create layer to show the offset-ed time
     s_offset_time = prv_show_value_layer_create(GRect(0, 2*widget_height+STATUS_BAR_LAYER_HEIGHT, bounds.size.w, widget_height));
-    prv_show_value_layer_set_title(s_offset_time, "Magrib");
+    prv_show_value_layer_set_title(s_offset_time, prayer_name);
     prv_show_value_layer_set_subtitle(s_offset_time, "(offset)");
     prv_show_value_layer_set_value(s_offset_time, s_offset_time_str);
-    snprintf(s_offset_time_str, string_size, "%d", myval+s_input_data->value);
+    // snprintf(s_offset_time_str, string_size, "%d", myval+s_input_data->value);
+    // strftime(s_offset_time_str, string_size, clock_is_24h_style() ? "%H:%M" : "%I:%M %p", prayer_time_offset);
+    prv_update_offset_time_preview(*current_offset);
 
     // create selection layer
     GRect input_bounds = GRect(0, 0+STATUS_BAR_LAYER_HEIGHT+widget_height, bounds.size.w, available_height/3);
@@ -276,9 +288,11 @@ static void window_unload(Window *window)
     }
 }
 
-void offset_window_init()
+void offset_window_init(char* _prayer_name, tm* _prayer_time, int* _current_offset)
 {
-    s_input_data = malloc(sizeof(InputData));
+    prayer_name = _prayer_name;
+    prayer_time = _prayer_time;
+    current_offset = _current_offset;
 }
 
 void offset_window_push()

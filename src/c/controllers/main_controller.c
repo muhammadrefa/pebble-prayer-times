@@ -5,11 +5,17 @@
 #include "../views/window_main.h"
 #include "../views/window_schedule.h"
 #include "../views/window_settings.h"
+#include "../views/window_offset.h"
 
 #include "main_controller.h"
 
 static PTConfig pt_cfg;
 static Coordinate coordinate;
+struct tm pray_schedule[PRAYERTIMES_TIME_TIMESCOUNT];
+
+int current_offset = 0;
+
+void main_show_offset();
 
 void main_store_settings()
 {
@@ -38,8 +44,6 @@ void main_show()
 
 void main_show_schedule()
 {
-    struct tm pray_schedule[PRAYERTIMES_TIME_TIMESCOUNT];
-
     // get prayer times
     time_t tmp = time(NULL);
     struct tm *tick_time = localtime(&tmp);
@@ -49,9 +53,12 @@ void main_show_schedule()
     // set to view
     schedule_window_set_coord(coordinate.latitude, coordinate.longitude);
     schedule_window_set_date(tick_time);
-    for (int i=0; i<PRAYERTIMES_TIME_TIMESCOUNT; ++i)
-        schedule_window_set_prayer_time(i, pray_schedule+i);
+    // for (int i=0; i<PRAYERTIMES_TIME_TIMESCOUNT; ++i)
+    //     schedule_window_set_prayer_time(i, pray_schedule+i);
+    schedule_window_set_prayer_times(pray_schedule);
     
+    schedule_window_set_selected_cb(main_show_offset);
+
     // show view/window
     schedule_window_push();
 }
@@ -60,4 +67,10 @@ void main_show_settings()
 {
     settings_window_init(main_store_settings, &pt_cfg, &coordinate);
     settings_window_push();
+}
+
+void main_show_offset(char* prayer_name, tm* prayer_time)
+{
+    offset_window_init(prayer_name, prayer_time, &current_offset);
+    offset_window_push();
 }

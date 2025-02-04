@@ -14,8 +14,17 @@ static TextLayer *s_coord_lyr;
 static char date_str[30] = {0};
 static TextLayer *s_date_lyr;
 
+static tm* prayer_time;
 static char time_str[7][10];
 static const char *time_name[] = {"Fajr", "Sunrise", "Dhuhr", "Asr", "Sunset", "Maghrib", "Isha"};
+
+static void (*cb_schedule_selected)(char*, tm*);
+
+static void prv_menu_selected(int index, void *context)
+{
+    if (cb_schedule_selected)
+        cb_schedule_selected((char *)time_name[index], prayer_time+index);
+}
 
 static void window_load(Window *window)
 {
@@ -43,6 +52,7 @@ static void window_load(Window *window)
     {
         s_menu_item[i].title = time_str[i];
         s_menu_item[i].subtitle = time_name[i];
+        s_menu_item[i].callback = prv_menu_selected;
     }
     s_menu_section.title = NULL;
     s_menu_section.items = s_menu_item;
@@ -72,9 +82,16 @@ static void window_unload(Window *window)
     s_window = NULL;
 }
 
-int schedule_window_set_prayer_time(int idx, tm *_time)
+// int schedule_window_set_prayer_time(int idx, tm *_time)
+// {
+//     return strftime(time_str[idx], sizeof(time_str[idx]), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", _time);
+// }
+
+void schedule_window_set_prayer_times(tm *_time)
 {
-    return strftime(time_str[idx], sizeof(time_str[idx]), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", _time);
+    prayer_time = _time;
+    for (unsigned i=0; i<7; ++i)
+        strftime(time_str[i], sizeof(time_str[i]), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", _time+i);
 }
 
 int schedule_window_set_date(tm *_time)
@@ -90,6 +107,11 @@ void schedule_window_set_coord(double lat, double lng)
     unsigned lng_d = abs(lng * 1e6) % 1000000;
 
     snprintf(coord_str, sizeof(coord_str), "%d.%u, %d.%u", lat_f, lat_d, lng_f, lng_d);
+}
+
+void schedule_window_set_selected_cb(void (*callback_selected)())
+{
+    cb_schedule_selected = callback_selected;
 }
 
 void schedule_window_push()
