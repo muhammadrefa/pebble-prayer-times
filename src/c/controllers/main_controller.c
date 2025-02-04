@@ -34,6 +34,7 @@ void main_init()
 {
     storage_load_pt_config(&pt_cfg);
     storage_load_coordinate(&coordinate);
+    storage_load_time_offset(time_offset);
     pt_init(pt_cfg.calc_method, pt_cfg.juristic, pt_cfg.adjustment);
     pt_set_location(coordinate.latitude, coordinate.longitude);
 }
@@ -50,7 +51,7 @@ void main_deinit()
 
     if (is_offset_changed)
     {
-
+        storage_store_time_offset(time_offset);
     }
 }
 
@@ -72,8 +73,6 @@ void main_show_schedule()
     schedule_window_init();
     schedule_window_set_coord(coordinate.latitude, coordinate.longitude);
     schedule_window_set_date(tick_time);
-    // for (int i=0; i<PRAYERTIMES_TIME_TIMESCOUNT; ++i)
-    //     schedule_window_set_prayer_time(i, pray_schedule+i);
     schedule_window_set_prayer_times(pray_schedule, time_offset);
     
     schedule_window_set_selected_cb(main_show_offset);
