@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "view_utils.h"
 #include "window_schedule.h"
 
 static Window *s_window;
@@ -15,15 +16,24 @@ static char date_str[30] = {0};
 static TextLayer *s_date_lyr;
 
 static tm* prayer_time;
+static int8_t* prayer_time_offset;
 static char time_str[7][10];
-static const char *time_name[] = {"Fajr", "Sunrise", "Dhuhr", "Asr", "Sunset", "Maghrib", "Isha"};
 
-static void (*cb_schedule_selected)(char*, tm*);
+static void (*cb_schedule_selected)(int);
+
+static void prv_refresh_prayer_time()
+{
+    for (unsigned i=0; i<7; ++i)
+    {
+        tm offset_time = view_util_apply_offset(prayer_time+i,  *(prayer_time_offset+i));
+        strftime(time_str[i], sizeof(time_str[i]), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", &offset_time);
+    }
+}
 
 static void prv_menu_selected(int index, void *context)
 {
     if (cb_schedule_selected)
-        cb_schedule_selected((char *)time_name[index], prayer_time+index);
+        cb_schedule_selected(index);
 }
 
 static void window_load(Window *window)
@@ -51,7 +61,7 @@ static void window_load(Window *window)
     for (int i=0; i<7; i++)
     {
         s_menu_item[i].title = time_str[i];
-        s_menu_item[i].subtitle = time_name[i];
+        s_menu_item[i].subtitle = view_util_time_name[i];
         s_menu_item[i].callback = prv_menu_selected;
     }
     s_menu_section.title = NULL;
@@ -82,16 +92,15 @@ static void window_unload(Window *window)
     s_window = NULL;
 }
 
-// int schedule_window_set_prayer_time(int idx, tm *_time)
-// {
-//     return strftime(time_str[idx], sizeof(time_str[idx]), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", _time);
-// }
+static void window_appear(Window *window)
+{
+    prv_refresh_prayer_time();
+}
 
-void schedule_window_set_prayer_times(tm *_time)
+void schedule_window_set_prayer_times(tm *_time, int8_t* time_offset)
 {
     prayer_time = _time;
-    for (unsigned i=0; i<7; ++i)
-        strftime(time_str[i], sizeof(time_str[i]), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", _time+i);
+    prayer_time_offset = time_offset;
 }
 
 int schedule_window_set_date(tm *_time)
@@ -109,6 +118,11 @@ void schedule_window_set_coord(double lat, double lng)
     snprintf(coord_str, sizeof(coord_str), "%d.%u, %d.%u", lat_f, lat_d, lng_f, lng_d);
 }
 
+void schedule_window_init(const char** _time_name)
+{
+    
+}
+
 void schedule_window_set_selected_cb(void (*callback_selected)())
 {
     cb_schedule_selected = callback_selected;
@@ -121,7 +135,8 @@ void schedule_window_push()
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
             .load = window_load,
-            .unload = window_unload
+            .unload = window_unload,
+            .appear = window_appear
         });
     }
 

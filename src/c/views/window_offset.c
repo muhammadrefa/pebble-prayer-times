@@ -1,5 +1,6 @@
-#include "window_offset.h"
+#include "view_utils.h"
 #include "layers/selection_layer.h"
+#include "window_offset.h"
 
 static Window *s_window;
 static StatusBarLayer *s_status_bar;
@@ -24,9 +25,9 @@ typedef struct _ShowValueLayer
 } ShowValueLayer;
 
 static InputData *s_input_data;
-static int *current_offset;
+static int8_t *current_offset;
 
-static char* prayer_name;
+static int prayer_idx;
 static tm* prayer_time;
 
 static ShowValueLayer* s_original_time;
@@ -34,6 +35,8 @@ static char *s_original_time_str;
 
 static ShowValueLayer* s_offset_time;
 static char *s_offset_time_str;
+
+static void (*cb_store)(int, int);
 
 // LSD in position 0
 static unsigned prv_get_num(unsigned position, int number)
@@ -109,12 +112,12 @@ static Layer* prv_show_value_layer_get_layer(ShowValueLayer* layer)
     return layer->layer;
 }
 
-static void prv_show_value_layer_set_title(ShowValueLayer* layer, char* title)
+static void prv_show_value_layer_set_title(ShowValueLayer* layer, const char* title)
 {
     text_layer_set_text(layer->title, title);
 }
 
-static void prv_show_value_layer_set_subtitle(ShowValueLayer* layer, char* subtitle)
+static void prv_show_value_layer_set_subtitle(ShowValueLayer* layer, const char* subtitle)
 {
     text_layer_set_text(layer->subtitle, subtitle);
 }
@@ -126,18 +129,7 @@ static void prv_show_value_layer_set_value(ShowValueLayer* layer, char* value)
 
 static void prv_update_offset_time_preview(int offset)
 {
-    tm offset_time = *prayer_time;
-    offset_time.tm_min += offset;
-    if (offset_time.tm_min >= 60)
-    {
-        offset_time.tm_hour += 1;
-        offset_time.tm_min -= 60;
-    }
-    else if (offset_time.tm_min < 0)
-    {
-        offset_time.tm_hour -= 1;
-        offset_time.tm_min += 60;
-    }
+    tm offset_time = view_util_apply_offset(prayer_time, offset);
     strftime(s_offset_time_str, string_size, clock_is_24h_style() ? "%H:%M" : "%I:%M %p", &offset_time);
 }
 
@@ -158,7 +150,9 @@ static char* selection_handle_get_text(int index, void *context) {
 }
 
 static void selection_handle_complete(void *context) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "selection completed");
+    cb_store(prayer_idx, s_input_data->value);
+
+    window_stack_pop(true);
 }
 
 static void selection_handle_inc(int index, uint8_t clicks, void *context) {
@@ -212,6 +206,7 @@ static void window_load(Window *window)
 
     if (s_input_data == NULL)
         s_input_data = malloc(sizeof(InputData));
+    s_input_data->value = *current_offset;
 
     // get Window info
     Layer *window_layer = window_get_root_layer(window);
@@ -225,7 +220,7 @@ static void window_load(Window *window)
 
     // create layer to show the original time
     s_original_time = prv_show_value_layer_create(GRect(0, 0+STATUS_BAR_LAYER_HEIGHT, bounds.size.w, widget_height));
-    prv_show_value_layer_set_title(s_original_time, prayer_name);
+    prv_show_value_layer_set_title(s_original_time, view_util_time_name[prayer_idx]);
     prv_show_value_layer_set_subtitle(s_original_time, "(original)");
     prv_show_value_layer_set_value(s_original_time, s_original_time_str);
     // snprintf(s_original_time_str, string_size, "%d%d:%d%d am", myval, myval+1, myval+2, myval+3);
@@ -233,7 +228,7 @@ static void window_load(Window *window)
 
     // create layer to show the offset-ed time
     s_offset_time = prv_show_value_layer_create(GRect(0, 2*widget_height+STATUS_BAR_LAYER_HEIGHT, bounds.size.w, widget_height));
-    prv_show_value_layer_set_title(s_offset_time, prayer_name);
+    prv_show_value_layer_set_title(s_offset_time, view_util_time_name[prayer_idx]);
     prv_show_value_layer_set_subtitle(s_offset_time, "(offset)");
     prv_show_value_layer_set_value(s_offset_time, s_offset_time_str);
     // snprintf(s_offset_time_str, string_size, "%d", myval+s_input_data->value);
@@ -288,11 +283,12 @@ static void window_unload(Window *window)
     }
 }
 
-void offset_window_init(char* _prayer_name, tm* _prayer_time, int* _current_offset)
+void offset_window_init(int _prayer_idx, tm* _prayer_time, int8_t* _current_offset, void (*callback_store)(int, int))
 {
-    prayer_name = _prayer_name;
+    prayer_idx = _prayer_idx;
     prayer_time = _prayer_time;
     current_offset = _current_offset;
+    cb_store = callback_store;
 }
 
 void offset_window_push()
