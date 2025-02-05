@@ -1,0 +1,93 @@
+[
+  { 
+    "type": "heading", 
+    "defaultValue": "Prayer Times configuration" 
+  },
+  {
+    "type": "section",
+    "items": [
+      {
+        "type": "heading",
+        "defaultValue": "Coordinate"
+      },
+      {
+        "type": "input",
+        "messageKey": "CoordinateLatitude",
+        "defaultValue": "",
+        "label": "Latitude",
+        "attributes": {
+          "type": "number"
+        }
+      },
+      {
+        "type": "input",
+        "messageKey": "CoordinateLongitude",
+        "defaultValue": "",
+        "label": "Longitude",
+        "attributes": {
+          "type": "number"
+        }
+      }
+    ]
+  },
+  { 
+    "type": "section", 
+    "items": [
+      {
+        "type": "heading",
+        "defaultValue": "Calculation settings"
+      },
+      {
+        "type": "select",
+        "messageKey": "SettingsMethod",
+        "defaultValue": "",
+        "label": "Calculation method",
+        "options": [
+          {"label": "Muslim World League", "value": 3},
+          {"label": "Islamic Society of North America", "value": 2},
+          {"label": "Egyptian General Authority of Survey", "value": 5},
+          {"label": "Umm al-Qura University, Makkah", "value": 4},
+          {"label": "University of Islamic Sciences, Karachi", "value": 1},
+          {"label": "Shia Ithna Ashari (Ja'fari)", "value": 0},
+          {"label": "Custom", "value": 6}
+        ]
+      },
+      {
+        "type": "select",
+        "messageKey": "SettingsAsr",
+        "defaultValue": "",
+        "label": "Asr method",
+        "options": [
+          {"label": "Standard", "value": 0},
+          {"label": "Hanafi", "value": 1}
+        ]
+      },
+      {
+        "type": "select",
+        "messageKey": "SettingsMidnight",
+        "defaultValue": "",
+        "label": "Midnight method",
+        "options": [
+          {"label": "Standard", "value": 0},
+          {"label": "Jafari", "value": 1}
+        ]
+      },
+      {
+        "type": "select",
+        "messageKey": "SettingsHiLatitude",
+        "defaultValue": "",
+        "label": "Higher latitudes method",
+        "options": [
+          {"label": "None", "value": 0},
+          {"label": "Midnight", "value": 1},
+          {"label": "1/7th of the night", "value": 2},
+          {"label": "Angle-based", "value": 3}
+        ]
+      }
+    ]
+  },
+  {
+    "type": "submit",
+    "defaultValue": "Send Configuration to Pebble"
+  }
+]
