@@ -7,10 +7,9 @@ _Work In Progress_
 
 ## Features:
 - [X] Show prayer times
-- [ ] Change location
 - [X] Save configuration to storage
 - [X] Set time offset
-- [ ] Configuration page (using [Clay](https://github.com/pebble/clay))
+- [X] Configuration page (using [Clay](https://github.com/pebble/clay))
 - [ ] Get location from phone
 - [ ] Timeline integration
 - [ ] Show current and next prayer time in the first screen

@@ -2,9 +2,13 @@
   "name": "prayer-times",
   "author": "Muhammad Refa Utama Putra",
   "version": "0.1.0",
-  "keywords": ["pebble-app"],
+  "keywords": [
+    "pebble-app"
+  ],
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "pebble-clay": "^1.0.4"
+  },
   "pebble": {
     "displayName": "Prayer Times",
     "uuid": "22b0536c-e28a-4d40-b5b3-781a816f82a3",
@@ -20,7 +24,12 @@
       "watchface": false
     },
     "messageKeys": [
-      "dummy"
+      "CoordinateLatitude",
+      "CoordinateLongitude",
+      "SettingsMethod",
+      "SettingsAsr",
+      "SettingsMidnight",
+      "SettingsHiLatitude"
     ],
     "resources": {
       "media": []

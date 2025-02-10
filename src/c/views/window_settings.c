@@ -48,8 +48,8 @@ void settings_window_init(void (*callback_changed)(), PTConfig *pt_cfg, Coordina
     s_pt_cfg = pt_cfg;
 
     enum2str_calculation_method(s_pt_cfg->calc_method, str_cfg_calc, sizeof(str_cfg_calc));
-    enum2str_juristic_method(s_pt_cfg->juristic, str_cfg_asr, sizeof(str_cfg_asr));
-    enum2str_hi_lat_method(s_pt_cfg->adjustment, str_cfg_hi_lat, sizeof(str_cfg_hi_lat));
+    enum2str_juristic_method(s_pt_cfg->asr, str_cfg_asr, sizeof(str_cfg_asr));
+    enum2str_hi_lat_method(s_pt_cfg->hilat_adjustment, str_cfg_hi_lat, sizeof(str_cfg_hi_lat));
 
     int lat_f = (int)coordinate->latitude;
     unsigned lat_d = abs(coordinate->latitude * 1e6) % 1000000;
@@ -93,20 +93,20 @@ static void cb_action_asr(ActionMenu *action_menu, const ActionMenuItem *action,
 {
     // get selected value (from context)
     int value = (int)action_menu_item_get_action_data(action);
-    s_pt_cfg->juristic = (uint8_t)value;
+    s_pt_cfg->asr = (uint8_t)value;
     s_changed = true;
 
-    enum2str_juristic_method(s_pt_cfg->juristic, str_cfg_asr, sizeof(str_cfg_asr));
+    enum2str_juristic_method(s_pt_cfg->asr, str_cfg_asr, sizeof(str_cfg_asr));
 }
 
 static void cb_action_hi_lat(ActionMenu *action_menu, const ActionMenuItem *action, void *context)
 {
     // get selected value (from context)
     int value = (int)action_menu_item_get_action_data(action);
-    s_pt_cfg->adjustment = (uint8_t)value;
+    s_pt_cfg->hilat_adjustment = (uint8_t)value;
     s_changed = true;
 
-    enum2str_hi_lat_method(s_pt_cfg->adjustment, str_cfg_hi_lat, sizeof(str_cfg_hi_lat));
+    enum2str_hi_lat_method(s_pt_cfg->hilat_adjustment, str_cfg_hi_lat, sizeof(str_cfg_hi_lat));
 }
 
 static void deinit_action_menu()
