@@ -13,7 +13,7 @@
       {
         "type": "input",
         "messageKey": "CoordinateLatitude",
-        "defaultValue": "",
+        "defaultValue": 0,
         "label": "Latitude * 1000000",
         "attributes": {
           "type": "number",
@@ -25,7 +25,7 @@
       {
         "type": "input",
         "messageKey": "CoordinateLongitude",
-        "defaultValue": "",
+        "defaultValue": 0,
         "label": "Longitude * 1000000",
         "attributes": {
           "type": "number",
@@ -46,7 +46,7 @@
       {
         "type": "select",
         "messageKey": "SettingsMethod",
-        "defaultValue": "",
+        "defaultValue": 3,
         "label": "Calculation method",
         "options": [
           {"label": "Muslim World League", "value": 3},
@@ -61,7 +61,7 @@
       {
         "type": "select",
         "messageKey": "SettingsAsr",
-        "defaultValue": "",
+        "defaultValue": 0,
         "label": "Asr method",
         "options": [
           {"label": "Standard", "value": 0},
@@ -71,7 +71,7 @@
       {
         "type": "select",
         "messageKey": "SettingsHiLatitude",
-        "defaultValue": "",
+        "defaultValue": 0,
         "label": "Higher latitudes method",
         "options": [
           {"label": "None", "value": 0},
