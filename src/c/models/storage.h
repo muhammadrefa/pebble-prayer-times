@@ -6,8 +6,8 @@
 typedef struct _PTConfig
 {
     uint8_t calc_method;
-    uint8_t juristic;
-    uint8_t adjustment;
+    uint8_t asr;
+    uint8_t hilat_adjustment;
     uint8_t use_offset;
 } PTConfig;
 

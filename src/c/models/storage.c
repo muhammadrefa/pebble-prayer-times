@@ -14,8 +14,8 @@ bool storage_load_pt_config(PTConfig *settings)
         // match PrayTimes example
         *settings = (PTConfig){
             .calc_method = PRAYERTIMES_CALCULATION_MWL,
-            .juristic = PRAYERTIMES_JURISTIC_SHAFII,
-            .adjustment = PRAYERTIMES_ADJUSTMENT_NONE,
+            .asr = PRAYERTIMES_JURISTIC_SHAFII,
+            .hilat_adjustment = PRAYERTIMES_ADJUSTMENT_NONE,
             .use_offset = false
         };
 
@@ -49,12 +49,8 @@ bool storage_load_coordinate(Coordinate *coordinate)
     // TODO: Set default settings
     if (res != sizeof(Coordinate))
     {
-        // coordinate->latitude = 0.0;
-        // coordinate->longitude = 0.0;
-
-        // match PrayTimes example
-        coordinate->latitude = 43.0;
-        coordinate->longitude = -80.0;
+        coordinate->latitude = 0.0;
+        coordinate->longitude = 0.0;
     }
     else
     {
