@@ -14,18 +14,24 @@
         "type": "input",
         "messageKey": "CoordinateLatitude",
         "defaultValue": "",
-        "label": "Latitude",
+        "label": "Latitude * 1000000",
         "attributes": {
-          "type": "number"
+          "type": "number",
+          "min": -90000000,
+          "max": 90000000,
+          "step": 1
         }
       },
       {
         "type": "input",
         "messageKey": "CoordinateLongitude",
         "defaultValue": "",
-        "label": "Longitude",
+        "label": "Longitude * 1000000",
         "attributes": {
-          "type": "number"
+          "type": "number",
+          "min": -180000000,
+          "max": 180000000,
+          "step": 1
         }
       }
     ]
@@ -60,16 +66,6 @@
         "options": [
           {"label": "Standard", "value": 0},
           {"label": "Hanafi", "value": 1}
-        ]
-      },
-      {
-        "type": "select",
-        "messageKey": "SettingsMidnight",
-        "defaultValue": "",
-        "label": "Midnight method",
-        "options": [
-          {"label": "Standard", "value": 0},
-          {"label": "Jafari", "value": 1}
         ]
       },
       {
